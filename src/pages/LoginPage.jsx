@@ -205,7 +205,7 @@ export default function LoginPage() {
               Connecting Google account...
             </div>
           ) : (
-            <div className="flex justify-center overflow-hidden rounded-xl">
+            <div className="flex min-h-11 items-center justify-center px-4 sm:px-5">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => setError("Google sign-in was cancelled or failed.")}
