@@ -10,12 +10,31 @@ dotenv.config();
 await connectDB();
 
 const app = express();
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+  "https://securevault-khaki.vercel.app",
+]
+  .flatMap((value) => String(value || "").split(","))
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://your-vercel-url.vercel.app",
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, false);
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+app.options("*", cors());
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
