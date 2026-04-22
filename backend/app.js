@@ -10,31 +10,33 @@ dotenv.config();
 await connectDB();
 
 const app = express();
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.FRONTEND_URL,
-  "https://securevault-khaki.vercel.app",
-]
-  .flatMap((value) => String(value || "").split(","))
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = new Set(
+  [
+    process.env.CLIENT_URL,
+    process.env.FRONTEND_URL,
+    "https://securevault-khaki.vercel.app",
+    "http://localhost:5173",
+  ]
+    .flatMap((value) => String(value || "").split(","))
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+);
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.has(origin)) {
       callback(null, true);
       return;
     }
 
-    callback(null, false);
+    callback(new Error(`CORS blocked for origin: ${origin}`));
   },
-  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 app.use(express.json());
 
 app.get("/", (_req, res) => {
