@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./api";
+
 export function getApiErrorMessage(error, fallbackMessage) {
   const validationErrors = error.response?.data?.errors;
 
@@ -13,7 +15,11 @@ export function getApiErrorMessage(error, fallbackMessage) {
   }
 
   if (error.code === "ERR_NETWORK") {
-    return "Unable to reach the backend at http://localhost:5000. Make sure the server is running.";
+    if (!API_BASE_URL) {
+      return "Backend URL is not configured. Set VITE_API_BASE_URL in your frontend environment and redeploy.";
+    }
+
+    return `Unable to reach the backend at ${API_BASE_URL}. Make sure the server is running and CORS is configured correctly.`;
   }
 
   if (typeof error.message === "string" && error.message.trim()) {

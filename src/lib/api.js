@@ -1,9 +1,26 @@
 import axios from "axios";
 
 export const TOKEN_STORAGE_KEY = "secure_notes_token";
+const LOCAL_API_BASE_URL = "http://localhost:5000/api";
+
+function normalizeApiBaseUrl(value) {
+  const normalizedValue = String(value ?? "").trim().replace(/\/+$/, "");
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  return normalizedValue.endsWith("/api")
+    ? normalizedValue
+    : `${normalizedValue}/api`;
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(
+  import.meta.env.VITE_API_BASE_URL,
+) || (import.meta.env.DEV ? LOCAL_API_BASE_URL : "");
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
