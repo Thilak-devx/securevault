@@ -14,7 +14,6 @@ import {
 } from "../middleware/rateLimiters.js";
 import {
   forgotPasswordValidation,
-  googleLoginValidation,
   loginValidation,
   registerValidation,
   resetPasswordValidation,
@@ -23,7 +22,7 @@ import {
 const router = Router();
 router.post("/register", registerValidation, register);
 router.post("/login", loginRateLimiter, loginValidation, login);
-router.post("/google-login", googleLoginValidation, googleLogin);
+router.post("/google-login", googleLogin);
 router.post(
   "/forgot-password",
   forgotPasswordRateLimiter,
