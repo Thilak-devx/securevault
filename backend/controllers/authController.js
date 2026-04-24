@@ -155,7 +155,46 @@ export async function googleLogin(req, res) {
     }
 
     return res.json(createAuthPayload(user));
-  } catch {
+  } catch (error) {
+    console.error("Google sign-in error:", error);
+    const googleErrorMessage = String(error?.message || "").trim();
+
+    if (googleErrorMessage.includes("Wrong recipient")) {
+      return res.status(401).json({
+        message: "Google OAuth client mismatch. Make sure VITE_GOOGLE_CLIENT_ID and GOOGLE_CLIENT_ID match the same Google app.",
+      });
+    }
+
+    if (googleErrorMessage.includes("Token used too early")) {
+      return res.status(401).json({
+        message: "Google sign-in token is not valid yet. Please try again.",
+      });
+    }
+
+    if (googleErrorMessage.includes("audience")) {
+      return res.status(401).json({
+        message: "Google OAuth audience mismatch. Verify that your frontend and backend are using the same Google client ID.",
+      });
+    }
+
+    if (googleErrorMessage.includes("Token expired")) {
+      return res.status(401).json({
+        message: "Google sign-in token expired. Please try again.",
+      });
+    }
+
+    if (googleErrorMessage.includes("Malformed")) {
+      return res.status(401).json({
+        message: "Google returned an invalid credential token. Try signing in again.",
+      });
+    }
+
+    if (googleErrorMessage) {
+      return res.status(401).json({
+        message: `Google verification failed: ${googleErrorMessage}`,
+      });
+    }
+
     return res.status(401).json({ message: "Google sign-in failed." });
   }
 }

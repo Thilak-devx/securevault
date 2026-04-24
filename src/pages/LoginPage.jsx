@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { getApiErrorMessage } from "../lib/apiError";
 
 export default function LoginPage() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
   const navigate = useNavigate();
   const location = useLocation();
   const { login, googleLogin, isAuthenticated } = useAuth();
@@ -75,6 +76,14 @@ export default function LoginPage() {
     } finally {
       setIsGoogleSubmitting(false);
     }
+  }
+
+  function handleGoogleError() {
+    setError(
+      googleClientId
+        ? "Google sign-in could not be completed. Check your Google OAuth authorized JavaScript origins and try again."
+        : "Google Sign-In is not configured on the frontend. Set VITE_GOOGLE_CLIENT_ID in Vercel and redeploy.",
+    );
   }
 
   return (
@@ -206,14 +215,20 @@ export default function LoginPage() {
             </div>
           ) : (
             <div className="flex min-h-11 items-center justify-center px-4 sm:px-5">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError("Google sign-in was cancelled or failed.")}
-                theme="filled_black"
-                shape="pill"
-                text="continue_with"
-                width="320"
-              />
+              {googleClientId ? (
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="filled_black"
+                  shape="pill"
+                  text="continue_with"
+                  width="320"
+                />
+              ) : (
+                <div className="flex w-full items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-center text-sm text-amber-100">
+                  Google Sign-In is unavailable until Vercel has a valid <code className="mx-1 rounded bg-black/20 px-1.5 py-0.5 text-xs">VITE_GOOGLE_CLIENT_ID</code>.
+                </div>
+              )}
             </div>
           )}
         </div>
