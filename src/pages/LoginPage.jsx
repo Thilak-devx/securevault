@@ -6,6 +6,7 @@ import InputField from "../components/InputField";
 import PrimaryButton from "../components/PrimaryButton";
 import SecureMascot from "../components/SecureMascot";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../lib/api";
 import { getApiErrorMessage } from "../lib/apiError";
 
 export default function LoginPage() {
@@ -29,6 +30,26 @@ export default function LoginPage() {
       setError(message);
       sessionStorage.removeItem("secure_notes_auth_message");
     }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function warmBackend() {
+      try {
+        await api.get("/health");
+      } catch (warmupError) {
+        if (!isMounted) {
+          return;
+        }
+      }
+    }
+
+    warmBackend();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {

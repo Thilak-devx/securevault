@@ -22,6 +22,10 @@ export function getApiErrorMessage(error, fallbackMessage) {
     return `Unable to reach the backend at ${API_BASE_URL}. Make sure the server is running and CORS is configured correctly.`;
   }
 
+  if (error.code === "ECONNABORTED") {
+    return "The server is taking too long to respond. If you're using a free Render backend, it may be waking up. Please try again in a few seconds.";
+  }
+
   if (typeof error.message === "string" && error.message.trim()) {
     return error.message;
   }
