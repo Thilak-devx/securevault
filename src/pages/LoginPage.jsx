@@ -9,6 +9,19 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 import { getApiErrorMessage } from "../lib/apiError";
 
+const AUTH_REQUEST_TIMEOUT_MS = 15000;
+
+function withAuthTimeout(promise, timeoutMessage) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => {
+        reject(new Error(timeoutMessage));
+      }, AUTH_REQUEST_TIMEOUT_MS);
+    }),
+  ]);
+}
+
 export default function LoginPage() {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
   const navigate = useNavigate();
@@ -72,7 +85,10 @@ export default function LoginPage() {
     try {
       setIsSubmitting(true);
       setError("");
-      await login(form);
+      await withAuthTimeout(
+        login(form),
+        "Login is taking too long. If the backend is waking up, please try again in a few seconds.",
+      );
       navigate(redirectTo, { replace: true });
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Invalid email or password. Please try again."));
@@ -90,7 +106,10 @@ export default function LoginPage() {
     try {
       setIsGoogleSubmitting(true);
       setError("");
-      await googleLogin(credentialResponse.credential);
+      await withAuthTimeout(
+        googleLogin(credentialResponse.credential),
+        "Google sign-in is taking too long. If the backend is waking up, please try again in a few seconds.",
+      );
       navigate(redirectTo, { replace: true });
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Google sign-in failed. Please try again."));
