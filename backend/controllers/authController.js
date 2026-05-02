@@ -6,6 +6,16 @@ import { sendPasswordResetEmail } from "../config/mailer.js";
 import { Note, User } from "../models/index.js";
 
 const googleClient = new OAuth2Client();
+const GOOGLE_SIGN_IN_TIMEOUT_MS = 12000;
+
+function withTimeout(promise, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), GOOGLE_SIGN_IN_TIMEOUT_MS);
+    }),
+  ]);
+}
 
 function createToken(user) {
   const jwtSecret = process.env.JWT_SECRET;
@@ -129,10 +139,13 @@ export async function googleLogin(req, res) {
         .json({ message: "Google credential token is required." });
     }
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: googleClientId,
-    });
+    const ticket = await withTimeout(
+      googleClient.verifyIdToken({
+        idToken: credential,
+        audience: googleClientId,
+      }),
+      "Google token verification timed out.",
+    );
     const payload = ticket.getPayload();
 
     if (!payload?.email || !payload.sub) {
@@ -141,17 +154,23 @@ export async function googleLogin(req, res) {
         .json({ message: "Unable to verify your Google account." });
     }
 
-    let user = await User.findOne({ email: payload.email.toLowerCase() });
+    let user = await withTimeout(
+      User.findOne({ email: payload.email.toLowerCase() }),
+      "User lookup timed out.",
+    );
 
     if (!user) {
-      user = await User.create({
-        name: payload.name,
-        email: payload.email,
-        googleId: payload.sub,
-      });
+      user = await withTimeout(
+        User.create({
+          name: payload.name,
+          email: payload.email,
+          googleId: payload.sub,
+        }),
+        "User creation timed out.",
+      );
     } else if (!user.googleId) {
       user.googleId = payload.sub;
-      await user.save();
+      await withTimeout(user.save(), "User update timed out.");
     }
 
     return res.json(createAuthPayload(user));
@@ -186,6 +205,12 @@ export async function googleLogin(req, res) {
     if (googleErrorMessage.includes("Malformed")) {
       return res.status(401).json({
         message: "Google returned an invalid credential token. Try signing in again.",
+      });
+    }
+
+    if (googleErrorMessage.includes("timed out")) {
+      return res.status(504).json({
+        message: "Google sign-in is taking too long on the server. Please try again in a few seconds.",
       });
     }
 
