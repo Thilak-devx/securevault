@@ -265,8 +265,17 @@ export default function NoteCard({
           {renderHighlightedText(content, searchQuery)}
         </p>
       )}
-      {!isLocked ? (
-        <div className="pointer-events-none absolute inset-x-5 bottom-[4.85rem] z-10 hidden translate-y-2 items-center justify-end gap-2 opacity-0 transition-all duration-200 ease-in-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 sm:flex">
+      <div
+        className={`pointer-events-none absolute inset-x-5 bottom-[4.85rem] z-10 hidden translate-y-2 items-center justify-end gap-2 opacity-0 transition-all duration-200 ease-in-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 sm:flex ${
+          isLocked ? "justify-between" : "justify-end"
+        }`}
+      >
+        {isLocked ? (
+          <span className="pointer-events-none rounded-full border border-accent/15 bg-slate-950/75 px-3 py-1.5 text-[11px] font-medium tracking-[0.08em] text-accent shadow-lg backdrop-blur-md">
+            Locked
+          </span>
+        ) : null}
+        {!isLocked ? (
           <button
             type="button"
             onClick={(event) => {
@@ -287,8 +296,7 @@ export default function NoteCard({
           >
             Delete
           </button>
-        </div>
-      ) : null}
+      </div>
       <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.06] pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2.5">
