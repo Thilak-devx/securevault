@@ -286,16 +286,17 @@ export default function NoteCard({
           >
             Edit
           </button>
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onDelete();
-            }}
-            className="pointer-events-auto rounded-full border border-rose-400/20 bg-slate-950/80 px-3 py-1.5 text-xs font-medium text-rose-200 shadow-lg backdrop-blur-md transition-all duration-200 ease-in-out hover:bg-rose-400/10"
-          >
-            Delete
-          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete();
+          }}
+          className="pointer-events-auto rounded-full border border-rose-400/20 bg-slate-950/80 px-3 py-1.5 text-xs font-medium text-rose-200 shadow-lg backdrop-blur-md transition-all duration-200 ease-in-out hover:bg-rose-400/10"
+        >
+          Delete
+        </button>
       </div>
       <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.06] pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1.5">
