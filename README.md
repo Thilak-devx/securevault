@@ -1,6 +1,6 @@
 # SecureVault
 
-SecureVault is a premium secure notes application built with React, Tailwind CSS, Node.js, Express, and MongoDB. It combines a polished dark UI with practical security features like JWT authentication, Google OAuth, password-protected notes, email-based password reset, and encrypted note storage.
+SecureVault is a full-stack secure notes application built with React, Tailwind CSS, Node.js, Express, and MongoDB Atlas. It includes JWT authentication, Google OAuth, locked notes, email-based password reset, and encrypted note storage.
 
 ## Features
 
@@ -8,11 +8,9 @@ SecureVault is a premium secure notes application built with React, Tailwind CSS
 - Google OAuth sign-in
 - Password-protected notes with unlock and recovery flow
 - Forgot password flow with email reset
-- AES-encrypted notes at rest
-- Per-user notes with ownership checks
-- Real-time search and pinned notes
-- Toast notifications, loading states, and polished empty states
-- Responsive premium UI with mascot-based branding
+- Encrypted note storage
+- Per-user note ownership enforcement
+- Pinned notes, real-time search, and polished dashboard UX
 
 ## Tech Stack
 
@@ -20,7 +18,8 @@ SecureVault is a premium secure notes application built with React, Tailwind CSS
 - Tailwind CSS
 - Node.js
 - Express
-- MongoDB Atlas / Mongoose
+- MongoDB Atlas
+- Mongoose
 - Axios
 - JWT
 - Google OAuth
@@ -28,26 +27,12 @@ SecureVault is a premium secure notes application built with React, Tailwind CSS
 
 ## Screenshots
 
-Add your product screenshots here once deployed.
-
-- Login screen
-- Notes dashboard
-- Locked note flow
-- Settings / danger zone
-
-Example:
-
-```md
-![Login Screenshot](./screenshots/login.png)
-![Dashboard Screenshot](./screenshots/dashboard.png)
-```
+Add product screenshots here after deployment.
 
 ## Live Demo
 
 - Frontend: `https://your-frontend-domain.com`
 - Backend API: `https://your-backend-domain.com/api`
-
-Replace these with your deployed URLs.
 
 ## Local Setup
 
@@ -64,28 +49,39 @@ cd secure-notes-app
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Create environment variables
 
-Create a `.env` file in the project root using [`.env.example`](C:/Users/2026/Desktop/secure-notes-app/.env.example) as a guide.
+Copy [`.env.example`](C:/Users/2026/Desktop/secure-notes-app/.env.example) to `.env` and fill in your real values.
 
-Minimum required values:
+```bash
+cp .env.example .env
+```
+
+Required server values:
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000/api
+MONGODB_URI=mongodb+srv://your-db-user:your-db-password@your-cluster.mongodb.net/secure-notes-app?retryWrites=true&w=majority
+JWT_SECRET=replace-with-a-long-random-jwt-secret
+ENCRYPTION_KEY=replace-with-a-long-random-encryption-key
+```
+
+Required frontend-safe values:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000
 VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
 
-PORT=5000
-CLIENT_URL=http://localhost:5173
-FRONTEND_URL=http://localhost:5173
+Optional feature values:
 
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/secure-notes-app?retryWrites=true&w=majority
-JWT_SECRET=your-jwt-secret
-JWT_EXPIRES_IN=1h
-ENCRYPTION_KEY=your-strong-encryption-key
-
+```env
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-gmail-app-password
+CLIENT_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5173
+PORT=5000
+JWT_EXPIRES_IN=1h
 ```
 
 ### 4. Run the backend
@@ -95,8 +91,6 @@ npm start
 ```
 
 ### 5. Run the frontend
-
-In a second terminal:
 
 ```bash
 npm run dev
@@ -108,14 +102,45 @@ npm run dev
 npm run build
 ```
 
-## Production Notes
+## Frontend Environment Safety
 
-- Set `VITE_API_BASE_URL` to your deployed backend URL
-- Set `CLIENT_URL` / `FRONTEND_URL` to your deployed frontend URL
-- Use MongoDB Atlas in production
-- Use strong secrets for `JWT_SECRET` and `ENCRYPTION_KEY`
-- Use a Gmail App Password for `EMAIL_PASS`
-- Make sure Google OAuth authorized origins and redirect settings match your deployed domain
+Only `VITE_*` values are exposed to the client bundle. Never place server secrets in frontend code or in any environment variable that does not need to be public.
+
+Safe public frontend env vars for this project:
+
+- `VITE_API_BASE_URL`
+- `VITE_GOOGLE_CLIENT_ID`
+
+Server-only secrets that must never be used client-side:
+
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `ENCRYPTION_KEY`
+- `EMAIL_PASS`
+- any service account keys or deployment tokens
+
+## Security Checklist
+
+- `.env` and other secret files are gitignored
+- startup validation fails fast when core server env vars are missing
+- only public `VITE_*` vars are used in the frontend
+- placeholders live in `.env.example`, never real credentials
+
+## If Secrets Were Previously Exposed
+
+Rotate or regenerate these immediately if they were ever committed publicly:
+
+- MongoDB Atlas database user password or create a brand-new database user
+- `JWT_SECRET`
+- `ENCRYPTION_KEY`
+- Gmail App Password used for `EMAIL_PASS`
+- any deployment tokens or API keys that were stored in local env files
+
+Google OAuth client IDs are generally public identifiers, but any Google client secret should be rotated immediately if it was exposed anywhere else.
+
+## Repository Safety Notes
+
+Ignoring files now does not remove them from old Git history. If secrets were previously pushed to GitHub, rotate those credentials in the external services first, then purge the old files from Git history before treating the repository as fully clean.
 
 ## API Highlights
 
@@ -136,30 +161,6 @@ npm run build
 - `DELETE /api/notes/:id`
 - `POST /api/notes/unlock/:id`
 - `POST /api/notes/reset-lock/:id`
-
-## Security Highlights
-
-- Passwords hashed with bcrypt
-- JWT secret and expiry controlled through environment variables
-- Backend route protection with JWT middleware
-- Input validation and sanitization with express-validator
-- Login and forgot-password rate limiting
-- AES encryption for note content
-- Hashed per-note passwords for locked notes
-
-## Brand Assets
-
-- App icon / favicon: [public/secure-notes-icon.svg](C:/Users/2026/Desktop/secure-notes-app/public/secure-notes-icon.svg)
-- Circular owl logo component: [SecureVaultLogo.jsx](C:/Users/2026/Desktop/secure-notes-app/src/components/SecureVaultLogo.jsx)
-- Mascot component: [SecureMascot.jsx](C:/Users/2026/Desktop/secure-notes-app/src/components/SecureMascot.jsx)
-
-## Roadmap Ideas
-
-- Shareable secure note links
-- Rich text editor
-- Tags and folders
-- Audit log / note history
-- Two-factor authentication
 
 ## License
 

@@ -2,10 +2,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./config/db.js";
+import { validateServerEnv } from "./config/env.js";
 import authRoutes from "./routes/authRoutes.js";
 import noteRoutes from "./routes/noteRoutes.js";
 
 dotenv.config();
+validateServerEnv();
 
 await connectDB();
 
